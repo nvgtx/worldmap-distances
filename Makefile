@@ -1,34 +1,37 @@
-CC=gcc
-LD=gcc
-LIBS=-lm
-CFLAGS=-Wall
-LDFLAGS=-Wall $(LIBS)
+LIBS:=-lc -lm
+
+CC:=gcc
+CCFLAGS:=-c -Wall
+
+LD:=gcc
+LDFLAGS:=$(LIBS)
 
 find=$(shell find -type f -name $(1))
 
-SRCS:=$(call find, '*.c')
-OBJS:=$(SRCS:.c=.o)
+SOURCESH:=$(call find, '*.h')
+SOURCESC:=$(call find, '*.c')
+OBJECTS:=$(SOURCESC:.c=.o)
 
 #keep intermediate files
 .SECONDARY:
 #keep additional files
 .PRECIOUS: *.map
+#keyword targets
+.PHONY: all clean
 
-%.o: %.c
-	@ echo ".compiling"
-	$(CC) -c $^ -o $@ $(CFLAGS)
+%.o: %.c $(SOURCESH)
+	@echo ".compiling $<"
+	@$(CC) $< -o $@ $(CCFLAGS)
 
-%.elf: $(OBJS)
-	@ echo "..linking"
-	$(LD) $^ -o $@ $(LDFLAGS) -Wl,-Map,$*.map
+%.elf: $(OBJECTS)
+	@echo "..linking $@"
+	@$(LD) $^ -o $@ $(LDFLAGS) -Wl,-Map,$*.map
 
-.PHONY: all
 all: build.elf
-	@ echo "...completing"
+	@echo "...completing $^"
 
-.PHONY: clean
 clean:
-	@ echo ".cleaning"
+	@echo ".cleaning"
 	@rm -f $(call find, '*.o')
 	@rm -f $(call find, '*~')
 	@rm -f *.elf
